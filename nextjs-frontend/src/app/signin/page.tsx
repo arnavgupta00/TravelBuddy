@@ -1,27 +1,47 @@
 "use client";
 
-import React from "react";
-import { useState } from "react";
-import Link from 'next/link';
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signIn, signOut } from "next-auth/react";
 
 export default function Page() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  }
+    try {
+      console.log({ email, password });
+      await signIn("credentials", {
+        username: email,
+        password: password,
+        callbackUrl: "/",
+      });
+      console.log("Signed in successfully");
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      console.error("Failed to sign in: ", error);
+    }
+
+    // Add your form submission logic here
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col px-5 py-16 mx-auto w-full text-base bg-white max-w-[480px]">
-      <div className="flex gap-5 items-start font-bold text-center text-violet-950">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col px-5 py-16 mx-auto w-full text-base bg-white max-w-[480px] min-h-screen h-fit"
+    >
+      <div className="flex flex-col gap-5 items-start font-bold text-center text-violet-950">
         <img
           loading="lazy"
+          onClick={() => router.push("/home")}
           src="https://cdn.builder.io/api/v1/image/assets/TEMP/e8419ad9eb5493047f1803643fcaf023c520605259566946b054a4d5a4c0e687?apiKey=8f522db98d0241b0b95a275e1bb32c0e&"
           className="shrink-0 w-2.5 aspect-[0.5]"
         />
-        <div className="flex flex-col mt-4">
+        <div className="flex w-full flex-col mt-4 self-center">
           <img
             loading="lazy"
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/3d62ed9891c56c02f835bf257d2831e81727033ad5fdfe1eb3f4b14221a071b0?apiKey=8f522db98d0241b0b95a275e1bb32c0e&"
@@ -42,12 +62,8 @@ export default function Page() {
         </div>
       </div>
 
-
       <div className="mb-7 mt-10">
-        <label
-          className="text-sm text-neutral-700"
-          htmlFor="input-email"
-        >
+        <label className="text-sm text-neutral-700" htmlFor="input-email">
           Email
         </label>
         <input
@@ -63,10 +79,7 @@ export default function Page() {
         />
       </div>
       <div className="mb-11">
-        <label
-          className="text-sm text-neutral-700"
-          htmlFor="input-password"
-        >
+        <label className="text-sm text-neutral-700" htmlFor="input-password">
           Password
         </label>
         <input
@@ -81,11 +94,9 @@ export default function Page() {
         />
       </div>
 
-
-      <button className="bg-indigo-500 justify-center items-center px-16 py-4 mt-9 font-bold text-center text-white rounded-3xl leading-[150%]">
+      <button type="submit" className="bg-indigo-500 justify-center items-center px-16 py-4 mt-9 font-bold text-center text-white rounded-3xl leading-[150%]">
         Sign in
       </button>
-
 
       <div className="flex gap-2.5 items-start self-center mt-10 text-sm font-semibold leading-5 whitespace-nowrap text-zinc-600">
         <img
@@ -102,6 +113,7 @@ export default function Page() {
       </div>
       <img
         loading="lazy"
+        onClick={() => signIn("google", { callbackUrl: "/" })}
         srcSet="https://cdn.builder.io/api/v1/image/assets/TEMP/e1a8c2fd8ff2fff0607073aad6d8826f64a4c30368ae1cd838cdb09169788f2b?apiKey=8f522db98d0241b0b95a275e1bb32c0e&width=100 100w, https://cdn.builder.io/api/v1/image/assets/TEMP/e1a8c2fd8ff2fff0607073aad6d8826f64a4c30368ae1cd838cdb09169788f2b?apiKey=8f522db98d0241b0b95a275e1bb32c0e&width=200 200w, https://cdn.builder.io/api/v1/image/assets/TEMP/e1a8c2fd8ff2fff0607073aad6d8826f64a4c30368ae1cd838cdb09169788f2b?apiKey=8f522db98d0241b0b95a275e1bb32c0e&width=400 400w, https://cdn.builder.io/api/v1/image/assets/TEMP/e1a8c2fd8ff2fff0607073aad6d8826f64a4c30368ae1cd838cdb09169788f2b?apiKey=8f522db98d0241b0b95a275e1bb32c0e&width=800 800w, https://cdn.builder.io/api/v1/image/assets/TEMP/e1a8c2fd8ff2fff0607073aad6d8826f64a4c30368ae1cd838cdb09169788f2b?apiKey=8f522db98d0241b0b95a275e1bb32c0e&width=1200 1200w, https://cdn.builder.io/api/v1/image/assets/TEMP/e1a8c2fd8ff2fff0607073aad6d8826f64a4c30368ae1cd838cdb09169788f2b?apiKey=8f522db98d0241b0b95a275e1bb32c0e&width=1600 1600w, https://cdn.builder.io/api/v1/image/assets/TEMP/e1a8c2fd8ff2fff0607073aad6d8826f64a4c30368ae1cd838cdb09169788f2b?apiKey=8f522db98d0241b0b95a275e1bb32c0e&width=2000 2000w, https://cdn.builder.io/api/v1/image/assets/TEMP/e1a8c2fd8ff2fff0607073aad6d8826f64a4c30368ae1cd838cdb09169788f2b?apiKey=8f522db98d0241b0b95a275e1bb32c0e&"
         className="self-center mt-8 w-9 aspect-[0.85] hover:cursor-pointer"
       />
