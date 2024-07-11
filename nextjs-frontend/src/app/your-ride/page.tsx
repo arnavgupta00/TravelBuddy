@@ -27,7 +27,7 @@ const Page: React.FC = async () => {
   return (
     <div className="flex flex-col items-center py-5 mx-auto w-full text-xm font-bold bg-white max-w-[480px] h-screen">
       <Navbar authenticated={authenticated} session={session} />
-      <RideList  session={session} youride={false}/>
+      <RideList  session={session} youride={true}/>
       <div
         className="w-full   max-w-[480px] "
         style={{

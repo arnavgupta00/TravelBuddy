@@ -18,10 +18,16 @@ interface MapComponentProps {
   selectedTime: string;
   latitude: number;
   longitude: number;
+  startPointLatLong: any;
+  setStartPointLatLong: any;
+  endPointLatLong: any;
+  setEndPointLatLong: any;
 }
 
 export default function MapComponent(props: MapComponentProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const [route, setRoute] = useState<any>(null);
+
   const [map, setMap] = useState<Map | null>(null);
   const [selectedCountryState, setSelectedCountryState] = useState<string>();
   const [viewport, setViewport] = useState({
@@ -99,9 +105,37 @@ export default function MapComponent(props: MapComponentProps) {
       //   [bbox.maxLon, bbox.maxLat],
       // ],
     });
-    map.on("load", () => {
+    map.on("load", async () => {
       setMap(map);
       map.resize();
+
+      if (
+        props.startPointLatLong.latitude !== 0 &&
+        props.startPointLatLong.longitude !== 0 &&
+        props.endPointLatLong.latitude !== 0 &&
+        props.endPointLatLong.longitude !== 0
+      ) {
+        const routeReturn = await fetchRoute();
+
+        map.addSource("route", {
+          type: "geojson",
+          data: routeReturn,
+        });
+
+        map.addLayer({
+          id: "route",
+          type: "line",
+          source: "route",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-color": "#9289F4",
+            "line-width": 3,
+          },
+        });
+      }
     });
 
     map.on("move", () => {
@@ -296,6 +330,25 @@ export default function MapComponent(props: MapComponentProps) {
     );
   };
 
+  const fetchRoute = async () => {
+    const query = await fetch(
+      `https://api.mapbox.com/directions/v5/mapbox/driving/${props.startPointLatLong.longitude},${props.startPointLatLong.latitude};${props.endPointLatLong.longitude},${props.endPointLatLong.latitude}?geometries=geojson&access_token=${mapboxgl.accessToken}`
+    );
+    const data = await query.json();
+    console.log("Route data:", data);
+    const route = data.routes[0].geometry;
+    setRoute({
+      type: "Feature",
+      properties: {},
+      geometry: route,
+    });
+    return {
+      type: "Feature",
+      properties: {},
+      geometry: route,
+    };
+  };
+
   useEffect(() => {
     // console.log("Selected location:", props.selectedLocation);
     // const latitude = 37.7749;
@@ -314,6 +367,7 @@ export default function MapComponent(props: MapComponentProps) {
 
           try {
             await initializeMap(latitude, longitude);
+            fetchRoute();
           } catch (error) {
             console.error("Error fetching weather data:", error);
           }

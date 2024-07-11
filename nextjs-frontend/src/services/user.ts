@@ -42,3 +42,20 @@ export default async function createUser(user: {
     return null;
   }
 }
+
+
+export async function getUserByEmail(email: string) {
+  try {
+    const prisma = prismaConnect;
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+    prisma.$disconnect();
+    return user;
+  } catch (error) {
+    console.error("Failed to get user by email: ", error);
+    return null;
+  }
+}
