@@ -16,6 +16,13 @@
   }
 }
 
+
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #ffffff transparent;
+  scroll-behavior: smooth;
+}
+
 .schemed{
   color: #9289F4;
   background-color: #ffffff;

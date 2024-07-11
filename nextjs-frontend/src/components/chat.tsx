@@ -21,7 +21,7 @@ export default function ChatRoom({
   const [input, setInput] = useState("");
   const [username, setUsername] = useState(session?.user?.name);
   const [room] = useState(roomid);
-  const ws = useWebSocket("ws://localhost:5000");
+  const ws = useWebSocket("wss://travelbuddy-u9dq.onrender.com");
 
   useEffect(() => {
     if (!ws) return;
@@ -35,6 +35,7 @@ export default function ChatRoom({
     ws.onmessage = (event) => {
       console.log(event.data);
       const message: ChatMessage = JSON.parse(event.data);
+      if(message.username === username) return;
       setMessages((prev) => [...prev, message]);
     };
   }, [ws]);
@@ -49,18 +50,16 @@ export default function ChatRoom({
         image: session?.user?.image,
       };
       ws.send(JSON.stringify(message));
+      setMessages((prev) => [...prev, message]);
       setInput("");
     }
   };
 
-
   const removepercent20fromstring = () => {
-
     let str = roomid;
     let newstr = str.replace(/%20/g, " ");
     return newstr;
-
-  }
+  };
 
   return (
     <div className="flex flex-col items-center mx-auto w-full text-xm font-bold bg-white max-w-[480px] h-screen poppins-semibold reverse-schemed">
@@ -70,11 +69,12 @@ export default function ChatRoom({
             className="text-2xl poppins-bold h-2/12 ml-2 w-full"
             style={{ minHeight: "5%" }}
           >
-            Chat Room <span className="text-base">- {removepercent20fromstring()}</span>
+            Chat Room{" "}
+            <span className="text-base">- {removepercent20fromstring()}</span>
           </h1>
 
           <div
-            className="flex flex-col w-full min-h-4/6 rounded-xl p-2 overflow-y-scroll"
+            className="flex flex-col w-full min-h-4/6 rounded-xl p-2 overflow-y-scroll custom-scroll"
             style={{ minHeight: "85%" }}
           >
             {messages.map((message, index) => {
