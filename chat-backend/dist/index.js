@@ -18,7 +18,6 @@ const pg_1 = require("pg");
 require("dotenv/config");
 const PORT = 5000;
 const app = (0, express_1.default)();
-// PostgreSQL connection configuration
 const pgClient = new pg_1.Client({
     connectionString: process.env.DATABASE_URL ||
         "postgres://postgres:password@localhost:5432/chat",
@@ -26,12 +25,10 @@ const pgClient = new pg_1.Client({
         rejectUnauthorized: false,
     },
 });
-// Connect to PostgreSQL
 pgClient
     .connect()
     .then(() => {
     console.log("Connected to PostgreSQL");
-    // Create the chat table if it doesn't exist
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS chat (
         id SERIAL PRIMARY KEY,
@@ -47,15 +44,12 @@ pgClient
     console.log('Table "chat" is ready');
 })
     .catch((err) => console.error("Connection error", err.stack));
-// Create WebSocket server
 const server = app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
 });
 const wss = new ws_1.WebSocketServer({ server });
-// Maintain a mapping of clients to their respective rooms
 const clients = new Map();
 wss.on("connection", (ws) => {
-    // send all messages from the database to the client of the room
     ws.on("getMessages", (room) => __awaiter(void 0, void 0, void 0, function* () {
         const query = `
       SELECT * FROM chat WHERE room = $1
@@ -72,12 +66,25 @@ wss.on("connection", (ws) => {
     }));
     ws.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
         const chatMessage = JSON.parse(message);
+        if (chatMessage.type === "getMessages") {
+            const query = `
+      SELECT * FROM chat WHERE room = $1
+    `;
+            const values = [chatMessage.room];
+            try {
+                const result = yield pgClient.query(query, values);
+                console.log(result.rows);
+                ws.send(JSON.stringify({ type: "getMessages", messages: result.rows }));
+            }
+            catch (err) {
+                console.error("Error getting messages from database", err);
+            }
+            return;
+        }
         console.log(chatMessage);
-        // Save the room associated with this client
         if (chatMessage.room) {
             clients.set(ws, chatMessage.room);
         }
-        // Save message to database
         const query = `
       INSERT INTO chat (room, username, message, timestamp)
       VALUES ($1, $2, $3, NOW())
@@ -91,7 +98,6 @@ wss.on("connection", (ws) => {
             if (chatMessage.message === "getMessages")
                 return;
             yield pgClient.query(query, values);
-            // Broadcast message to all clients in the same room
             console.log(`Broadcasting message to room ${chatMessage.room}`);
             wss.clients.forEach((client) => {
                 if (clients.get(client) === chatMessage.room &&
@@ -105,7 +111,6 @@ wss.on("connection", (ws) => {
             console.error("Error inserting message into database", err);
         }
     }));
-    // Remove the client from the map when they disconnect
     ws.on("close", () => {
         clients.delete(ws);
     });

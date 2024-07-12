@@ -21,7 +21,7 @@ export default function ChatRoom({
   const [input, setInput] = useState("");
   const [username, setUsername] = useState(session?.user?.name);
   const [room] = useState(roomid);
-  const ws = useWebSocket("wss://travelbuddy-u9dq.onrender.com");
+  const ws = useWebSocket("wss://travelbuddy-u9dq.onrender.com"); //wss://travelbuddy-u9dq.onrender.com
 
   useEffect(() => {
     if (!ws) return;
@@ -30,12 +30,21 @@ export default function ChatRoom({
       console.log("Connected to chat");
       const message = { username, message: "getMessages", room };
       ws.send(JSON.stringify(message));
+
+      ws.send(JSON.stringify({ type: "getMessages", room }));
     };
 
     ws.onmessage = (event) => {
-      console.log(event.data);
+      const data = JSON.parse(event.data);
+
+      if(data.type === "getMessages") {
+        const messages = data.messages;
+        setMessages(messages);
+        return;
+      }
+
       const message: ChatMessage = JSON.parse(event.data);
-      if(message.username === username) return;
+      if (message.username === username) return;
       setMessages((prev) => [...prev, message]);
     };
   }, [ws]);
@@ -99,7 +108,7 @@ export default function ChatRoom({
               }
 
               return (
-                <div className="flex flex-row gap-2  items-center">
+                <div className="flex flex-row gap-2  items-center" key={index}>
                   <div className="w-11 h-11 rounded-full shadow-lg">
                     {session.user.image ? (
                       <img
