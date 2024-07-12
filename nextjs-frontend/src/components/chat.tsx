@@ -110,10 +110,10 @@ export default function ChatRoom({
               return (
                 <div className="flex flex-row gap-2  items-center" key={index}>
                   <div className="w-11 h-11 rounded-full shadow-lg">
-                    {session.user.image ? (
+                    {message.image ? (
                       <img
                         src={
-                          session.user.image ||
+                          message.image ||
                           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4n4D5jth4fm4GE7ut7lWW-04lnDO2OkD-sg&s"
                         }
                         alt="profileImage"
