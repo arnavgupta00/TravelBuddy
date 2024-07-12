@@ -35,6 +35,7 @@ pgClient
         room VARCHAR(255) NOT NULL,
         username VARCHAR(255) NOT NULL,
         message TEXT NOT NULL,
+        image TEXT,
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
@@ -73,7 +74,6 @@ wss.on("connection", (ws) => {
             const values = [chatMessage.room];
             try {
                 const result = yield pgClient.query(query, values);
-                console.log(result.rows);
                 ws.send(JSON.stringify({ type: "getMessages", messages: result.rows }));
             }
             catch (err) {
@@ -86,13 +86,14 @@ wss.on("connection", (ws) => {
             clients.set(ws, chatMessage.room);
         }
         const query = `
-      INSERT INTO chat (room, username, message, timestamp)
-      VALUES ($1, $2, $3, NOW())
+      INSERT INTO chat (room, username, message, timestamp , image)
+      VALUES ($1, $2, $3, NOW() , $4)
     `;
         const values = [
             chatMessage.room,
             chatMessage.username,
             chatMessage.message,
+            chatMessage.image,
         ];
         try {
             if (chatMessage.message === "getMessages")

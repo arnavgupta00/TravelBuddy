@@ -29,6 +29,7 @@ export default function ChatRoom({
     ws.onopen = () => {
       console.log("Connected to chat");
       const message = { username, message: "getMessages", room };
+      console.log("sending", message);
       ws.send(JSON.stringify(message));
 
       ws.send(JSON.stringify({ type: "getMessages", room }));
